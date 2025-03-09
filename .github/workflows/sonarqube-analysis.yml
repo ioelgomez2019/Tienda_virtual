@@ -1,0 +1,41 @@
+name: SonarQube Analysis
+
+on:
+  push:
+    branches:
+      - main  # Cambia a la rama que desees analizar
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonarqube:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Necesario para que SonarQube analice el historial de commits
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'  # SonarScanner requiere Java 11 o superior
+          distribution: 'temurin'
+
+      - name: Download SonarScanner
+        run: |
+          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip sonar-scanner.zip
+          echo "$PWD/sonar-scanner-5.0.1.3006-linux/bin" >> $GITHUB_PATH
+
+      - name: Run SonarScanner
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # Token de SonarQube
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}  # URL de SonarQube
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=comercio electrónico \
+            -Dsonar.fuentes=.\
+            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.token=sqp_722afe1f193b75d1d80fbabc0c1627e1f034ad79
